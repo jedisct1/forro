@@ -126,8 +126,8 @@ fn ForroNonVecImpl(comptime rounds_nb: usize) type {
             }
         }
 
-        fn forro14Xor(out: []u8, in: []const u8, key: [8]u32, nonce_and_counter: [4]u32, comptime count64: bool) void {
-            var ctx = initContext(key, nonce_and_counter);
+        fn forro14Xor(out: []u8, in: []const u8, key: [8]u32, counter_and_nonce: [4]u32, comptime count64: bool) void {
+            var ctx = initContext(key, counter_and_nonce);
             var x: BlockVec = undefined;
             var buf: [64]u8 = undefined;
             var i: usize = 0;
@@ -165,8 +165,8 @@ fn ForroNonVecImpl(comptime rounds_nb: usize) type {
             }
         }
 
-        fn forro14Stream(out: []u8, key: [8]u32, nonce_and_counter: [4]u32, comptime count64: bool) void {
-            var ctx = initContext(key, nonce_and_counter);
+        fn forro14Stream(out: []u8, key: [8]u32, counter_and_nonce: [4]u32, comptime count64: bool) void {
+            var ctx = initContext(key, counter_and_nonce);
             var x: BlockVec = undefined;
             var i: usize = 0;
             while (i + 64 <= out.len) : (i += 64) {
@@ -174,11 +174,11 @@ fn ForroNonVecImpl(comptime rounds_nb: usize) type {
                 contextFeedback(&x, ctx);
                 hashToBytes(out[i..][0..64], x);
                 if (count64) {
-                    const next = @addWithOverflow(ctx[12], 1);
-                    ctx[12] = next[0];
-                    ctx[13] +%= next[1];
+                    const next = @addWithOverflow(ctx[4], 1);
+                    ctx[4] = next[0];
+                    ctx[5] +%= next[1];
                 } else {
-                    ctx[12] +%= 1;
+                    ctx[4] +%= 1;
                 }
             }
             if (i < out.len) {
