@@ -200,14 +200,14 @@ fn ForroNonVecImpl(comptime rounds_nb: usize) type {
             var x: BlockVec = undefined;
             forro14Core(x[0..], ctx);
             var out: [32]u8 = undefined;
-            mem.writeIntLittle(u32, out[0..4], x[0]);
-            mem.writeIntLittle(u32, out[4..8], x[1]);
-            mem.writeIntLittle(u32, out[8..12], x[2]);
-            mem.writeIntLittle(u32, out[12..16], x[3]);
-            mem.writeIntLittle(u32, out[16..20], x[12]);
-            mem.writeIntLittle(u32, out[20..24], x[13]);
-            mem.writeIntLittle(u32, out[24..28], x[14]);
-            mem.writeIntLittle(u32, out[28..32], x[15]);
+            mem.writeIntLittle(u32, out[0..4], x[6]);
+            mem.writeIntLittle(u32, out[4..8], x[7]);
+            mem.writeIntLittle(u32, out[8..12], x[14]);
+            mem.writeIntLittle(u32, out[12..16], x[15]);
+            mem.writeIntLittle(u32, out[16..20], x[4]);
+            mem.writeIntLittle(u32, out[20..24], x[5]);
+            mem.writeIntLittle(u32, out[24..28], x[12]);
+            mem.writeIntLittle(u32, out[28..32], x[13]);
             return out;
         }
     };
