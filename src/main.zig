@@ -50,10 +50,10 @@ fn ForroNonVecImpl(comptime rounds_nb: usize) type {
         fn initContext(key: [8]u32, d: [4]u32) BlockVec {
             const c = "voltadaasabranca";
             const constant_le = comptime [4]u32{
-                mem.readIntLittle(u32, c[0..4]),
-                mem.readIntLittle(u32, c[4..8]),
-                mem.readIntLittle(u32, c[8..12]),
-                mem.readIntLittle(u32, c[12..16]),
+                mem.readInt(u32, c[0..4], .little),
+                mem.readInt(u32, c[4..8], .little),
+                mem.readInt(u32, c[8..12], .little),
+                mem.readInt(u32, c[12..16], .little),
             };
             return BlockVec{
                 key[0], key[1], key[2],         key[3],
@@ -113,10 +113,10 @@ fn ForroNonVecImpl(comptime rounds_nb: usize) type {
 
         inline fn hashToBytes(out: *[64]u8, x: BlockVec) void {
             for (0..4) |i| {
-                mem.writeIntLittle(u32, out[16 * i + 0 ..][0..4], x[i * 4 + 0]);
-                mem.writeIntLittle(u32, out[16 * i + 4 ..][0..4], x[i * 4 + 1]);
-                mem.writeIntLittle(u32, out[16 * i + 8 ..][0..4], x[i * 4 + 2]);
-                mem.writeIntLittle(u32, out[16 * i + 12 ..][0..4], x[i * 4 + 3]);
+                mem.writeInt(u32, out[16 * i + 0 ..][0..4], x[i * 4 + 0], .little);
+                mem.writeInt(u32, out[16 * i + 4 ..][0..4], x[i * 4 + 1], .little);
+                mem.writeInt(u32, out[16 * i + 8 ..][0..4], x[i * 4 + 2], .little);
+                mem.writeInt(u32, out[16 * i + 12 ..][0..4], x[i * 4 + 3], .little);
             }
         }
 
@@ -194,20 +194,20 @@ fn ForroNonVecImpl(comptime rounds_nb: usize) type {
         fn hforro14(input: [16]u8, key: [32]u8) [32]u8 {
             var c: [4]u32 = undefined;
             for (c, 0..) |_, i| {
-                c[i] = mem.readIntLittle(u32, input[4 * i ..][0..4]);
+                c[i] = mem.readInt(u32, input[4 * i ..][0..4], .little);
             }
             const ctx = initContext(keyToWords(key), c);
             var x: BlockVec = undefined;
             forro14Core(x[0..], ctx);
             var out: [32]u8 = undefined;
-            mem.writeIntLittle(u32, out[0..4], x[6]);
-            mem.writeIntLittle(u32, out[4..8], x[7]);
-            mem.writeIntLittle(u32, out[8..12], x[14]);
-            mem.writeIntLittle(u32, out[12..16], x[15]);
-            mem.writeIntLittle(u32, out[16..20], x[4]);
-            mem.writeIntLittle(u32, out[20..24], x[5]);
-            mem.writeIntLittle(u32, out[24..28], x[12]);
-            mem.writeIntLittle(u32, out[28..32], x[13]);
+            mem.writeInt(u32, out[0..4], x[6], .little);
+            mem.writeInt(u32, out[4..8], x[7], .little);
+            mem.writeInt(u32, out[8..12], x[14], .little);
+            mem.writeInt(u32, out[12..16], x[15], .little);
+            mem.writeInt(u32, out[16..20], x[4], .little);
+            mem.writeInt(u32, out[20..24], x[5], .little);
+            mem.writeInt(u32, out[24..28], x[12], .little);
+            mem.writeInt(u32, out[28..32], x[13], .little);
             return out;
         }
     };
@@ -220,7 +220,7 @@ fn ForroImpl(comptime rounds_nb: usize) type {
 fn keyToWords(key: [32]u8) [8]u32 {
     var k: [8]u32 = undefined;
     for (0..8) |i| {
-        k[i] = mem.readIntLittle(u32, key[i * 4 ..][0..4]);
+        k[i] = mem.readInt(u32, key[i * 4 ..][0..4], .little);
     }
     return k;
 }
@@ -253,9 +253,9 @@ fn Forro(comptime rounds_nb: usize) type {
 
             var d: [4]u32 = undefined;
             d[0] = counter;
-            d[1] = mem.readIntLittle(u32, nonce[0..4]);
-            d[2] = mem.readIntLittle(u32, nonce[4..8]);
-            d[3] = mem.readIntLittle(u32, nonce[8..12]);
+            d[1] = mem.readInt(u32, nonce[0..4], .little);
+            d[2] = mem.readInt(u32, nonce[4..8], .little);
+            d[3] = mem.readInt(u32, nonce[8..12], .little);
             ForroImpl(rounds_nb).forro14Xor(out, in, keyToWords(key), d, false);
         }
 
@@ -265,9 +265,9 @@ fn Forro(comptime rounds_nb: usize) type {
 
             var d: [4]u32 = undefined;
             d[0] = counter;
-            d[1] = mem.readIntLittle(u32, nonce[0..4]);
-            d[2] = mem.readIntLittle(u32, nonce[4..8]);
-            d[3] = mem.readIntLittle(u32, nonce[8..12]);
+            d[1] = mem.readInt(u32, nonce[0..4], .little);
+            d[2] = mem.readInt(u32, nonce[4..8], .little);
+            d[3] = mem.readInt(u32, nonce[8..12], .little);
             ForroImpl(rounds_nb).forro14Stream(out, keyToWords(key), d, false);
         }
     };
@@ -293,8 +293,8 @@ fn ForroWith64BitNonce(comptime rounds_nb: usize) type {
             var c: [4]u32 = undefined;
             c[0] = @truncate(counter);
             c[1] = @truncate(counter >> 32);
-            c[2] = mem.readIntLittle(u32, nonce[0..4]);
-            c[3] = mem.readIntLittle(u32, nonce[4..8]);
+            c[2] = mem.readInt(u32, nonce[0..4], .little);
+            c[3] = mem.readInt(u32, nonce[4..8], .little);
             ForroImpl(rounds_nb).forro14Xor(out, in, k, c, true);
         }
 
@@ -306,8 +306,8 @@ fn ForroWith64BitNonce(comptime rounds_nb: usize) type {
             var c: [4]u32 = undefined;
             c[0] = @truncate(counter);
             c[1] = @truncate(counter >> 32);
-            c[2] = mem.readIntLittle(u32, nonce[0..4]);
-            c[3] = mem.readIntLittle(u32, nonce[4..8]);
+            c[2] = mem.readInt(u32, nonce[0..4], .little);
+            c[3] = mem.readInt(u32, nonce[4..8], .little);
             ForroImpl(rounds_nb).forro14Stream(out, k, c, true);
         }
     };
@@ -373,8 +373,8 @@ fn ForroPoly1305(comptime rounds_nb: usize) type {
                 mac.update(zeros[0..padding]);
             }
             var lens: [16]u8 = undefined;
-            mem.writeIntLittle(u64, lens[0..8], ad.len);
-            mem.writeIntLittle(u64, lens[8..16], m.len);
+            mem.writeInt(u64, lens[0..8], ad.len, .little);
+            mem.writeInt(u64, lens[8..16], m.len, .little);
             mac.update(lens[0..]);
             mac.final(tag);
         }
@@ -407,8 +407,8 @@ fn ForroPoly1305(comptime rounds_nb: usize) type {
                 mac.update(zeros[0..padding]);
             }
             var lens: [16]u8 = undefined;
-            mem.writeIntLittle(u64, lens[0..8], ad.len);
-            mem.writeIntLittle(u64, lens[8..16], c.len);
+            mem.writeInt(u64, lens[0..8], ad.len, .little);
+            mem.writeInt(u64, lens[8..16], c.len, .little);
             mac.update(lens[0..]);
             var computedTag: [16]u8 = undefined;
             mac.final(computedTag[0..]);
