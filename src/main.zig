@@ -354,7 +354,7 @@ fn ForroPoly1305(comptime rounds_nb: usize) type {
             assert(c.len == m.len);
             assert(m.len <= 64 * (@as(u39, 1 << 32) - 1));
 
-            var polyKey = [_]u8{0} ** 32;
+            var polyKey: [32]u8 = @splat(0);
             Forro(rounds_nb).xor(polyKey[0..], polyKey[0..], 0, k, npub);
 
             Forro(rounds_nb).xor(c[0..m.len], m, 1, k, npub);
@@ -362,13 +362,13 @@ fn ForroPoly1305(comptime rounds_nb: usize) type {
             var mac = Poly1305.init(polyKey[0..]);
             mac.update(ad);
             if (ad.len % 16 != 0) {
-                const zeros = [_]u8{0} ** 16;
+                const zeros: [16]u8 = @splat(0);
                 const padding = 16 - (ad.len % 16);
                 mac.update(zeros[0..padding]);
             }
             mac.update(c[0..m.len]);
             if (m.len % 16 != 0) {
-                const zeros = [_]u8{0} ** 16;
+                const zeros: [16]u8 = @splat(0);
                 const padding = 16 - (m.len % 16);
                 mac.update(zeros[0..padding]);
             }
@@ -389,20 +389,20 @@ fn ForroPoly1305(comptime rounds_nb: usize) type {
         pub fn decrypt(m: []u8, c: []const u8, tag: [tag_length]u8, ad: []const u8, npub: [nonce_length]u8, k: [key_length]u8) AuthenticationError!void {
             assert(c.len == m.len);
 
-            var polyKey = [_]u8{0} ** 32;
+            var polyKey: [32]u8 = @splat(0);
             Forro(rounds_nb).xor(polyKey[0..], polyKey[0..], 0, k, npub);
 
             var mac = Poly1305.init(polyKey[0..]);
 
             mac.update(ad);
             if (ad.len % 16 != 0) {
-                const zeros = [_]u8{0} ** 16;
+                const zeros: [16]u8 = @splat(0);
                 const padding = 16 - (ad.len % 16);
                 mac.update(zeros[0..padding]);
             }
             mac.update(c);
             if (c.len % 16 != 0) {
-                const zeros = [_]u8{0} ** 16;
+                const zeros: [16]u8 = @splat(0);
                 const padding = 16 - (c.len % 16);
                 mac.update(zeros[0..padding]);
             }
@@ -461,8 +461,8 @@ test "forro14 AEAD API" {
     const ad = "Additional data";
 
     inline for (aeads) |aead| {
-        const key = [_]u8{69} ** aead.key_length;
-        const nonce = [_]u8{42} ** aead.nonce_length;
+        const key: [aead.key_length]u8 = @splat(69);
+        const nonce: [aead.nonce_length]u8 = @splat(42);
         var c: [m.len]u8 = undefined;
         var tag: [aead.tag_length]u8 = undefined;
         var out: [m.len]u8 = undefined;
